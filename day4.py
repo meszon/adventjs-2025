@@ -76,8 +76,91 @@ Próximos pasos:
 del primer dígito y para evitar errores de índice.
 • Eliminar la asignación redundante `chars = chars[1:len(chars)]`.
 '''
-#Versión de X estrellas
+#Versión de 4 estrellas
 def decode_santa_pin2(code: str) -> str:
-    return ''
+    code = code.replace(']', '').split('[')
+    code = code[1:len(code)]
+    results = []
+ 
+    for index, digit in enumerate(code):
+        num = digit[0]
+        match num:
+            case '<':
+                if index == 0:
+                    return None
+                else: 
+                    results.append(results[-1])
+            case _:
+                num = int(digit[0])
+                ops = digit[1:len(digit)]
 
-print(decode_santa_pin2('[1++][2-][3+][<]'))
+                for op in ops:
+                    match op:
+                        case '+':
+                            num += 1
+                        case '-':
+                            num -= 1
+
+                results.append(str(num  % 10))
+    if len(results) < 4:
+        return None
+    else:
+        decrypted = ''.join(results)
+        return decrypted
+    
+'''
+Puntos fuertes:
+• La lógica principal para decodificar el PIN es correcta y maneja las operaciones de suma y resta
+de manera adecuada.
+• El código maneja correctamente el bloque especial '<' para repetir el dígito anterior.
+• Se verifica que el resultado final tenga al menos 4 dígitos, devolviendo `None` en caso contrario.
+• El uso de `match` para las operaciones es moderno y legible.
+Puntos a mejorar:
+• La manipulación inicial de la cadena `code` (`code.replace(']', '').split('[')`) podría ser más
+robusta y clara. Por ejemplo, un bloque vacío `[]` o un bloque mal formado `[abc]` podrían causar
+errores inesperados.
+• El manejo del caso `num == '<'` dentro del bucle `for` es un poco redundante. Podría simplificarse
+la lógica de acceso al dígito anterior.
+Próximos pasos:
+• Considerar una forma más robusta de parsear los bloques, quizás usando expresiones regulares o iterando
+sobre los caracteres para identificar los límites de los bloques de manera más explícita.
+• Refactorizar la lógica del bloque '<' para evitar la comprobación `if index == 0` dentro del bucle,
+haciendo que el acceso a `results[-1]` sea más directo cuando sea aplicable.
+'''
+import re
+
+#Versión de 4 estrellas
+def decode_santa_pin3(code: str) -> str:
+
+    regexp = r'\[([0-9][+-]+|[0-9]|<)\]'
+    code_digits = re.findall(regexp, code)
+
+    results = []
+    for index, digit in enumerate(code_digits):
+        num = digit[0]
+        match num:
+            case '<':
+                if index == 0:
+                    return 'null'
+                else: 
+                    results.append(results[-1])
+            case _:
+                num = int(digit[0])
+                ops = digit[1:len(digit)]
+
+                for op in ops:
+                    match op:
+                        case '+':
+                            num += 1
+                        case '-':
+                            num -= 1
+
+                results.append(str(num  % 10))
+    if len(results) < 4:
+        return 'null'
+    else:
+        decrypted = ''.join(results)
+        return decrypted
+      
+print(decode_santa_pin3('[1++][2-][3+][<]'))
+print(decode_santa_pin3('[1++][][aaab][2-][4][<]9999+'))
